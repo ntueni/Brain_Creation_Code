@@ -18,7 +18,7 @@ for name in filenames:
     file_name_out = name
     
     config = ConfigFile(path_in, file_name_in, path_out, file_name_out,
-                        configFilePath="../IOput/model_config.ini", model_type='atrophy')
+                        configFilePath="./IOput/model_config.ini", model_type='atrophy')
     mesh = brain_creation.run(config)
     mesh.write(path_out, file_name_out, ['vtk','ucd'])
     # UNCOMMENT THE FOUR LINES BELOW AND COMMENT OUT LINES 21-24 inkl. IF YOU HAVE AN INPUT FIL ETO READ AND DON'T WANT TO CREATE A NEW MESH
