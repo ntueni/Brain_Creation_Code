@@ -8,7 +8,7 @@ from personal_scripts.create_prms import CreateAtrophyPRM, CreateTumorPRM
 
 ####### ATROPHY CODE #######
 # CHANGE ACCORDING TO PERSONAL DRIVES
-path_to_oasis = "C:/Users/grife/OneDrive/Documents/PostDoc/BrainModels/OASIS/OASIS-1/oasis_cs_freesurfer_disc1.tar/oasis_cs_freesurfer_disc1/disc1"
+path_to_oasis = " path to data directory "
 file_name_in = "aparc_DKTatlas+aseg.mgz"
 path_to_out = "../IOput/out/atrophy_files"
 filenames = ["OAS1_0002_MR1", "OAS1_0004_MR1", "OAS1_0005_MR1", "OAS1_0006_MR1", "OAS1_0007_MR1","OAS1_0009_MR1"]
@@ -33,7 +33,7 @@ for name in filenames:
                                 heterogConverter.Heterogeneity.NINER]:
     # for heterogeneity_model in [hc.Heterogeneity.NINETEENR]:
 
-        atrophy_creator = CreateAtrophyPRM("./atrophy_template_folder/atrophy_template_V2.prm")
+        atrophy_creator = CreateAtrophyPRM("./personal_scripts/atrophy_template_folder/atrophy_template_V2.prm")
         atrophy_creator.create_materials(mesh, conditioning, poissons, heterogeneity_model)
         atrophy_creator.write_materials()
         atrophy_creator.complete_prm(path_out, file_name_out, "{}_atrophy_{}R".format(file_name_out, heterogeneity_model.value))
