@@ -8,5 +8,6 @@ You will also need to change the location of the input files 'path_in' in lines 
 
 ## Modifications ##
 - Fixed problem with homogenization function
-- possible to get 1R - 2R - 4R - 9R and 17R models with updated material parameters
+- Possible to get 1R - 2R - 4R - 9R and 17R models with updated material parameters
+- run python3 -i -m personal_scripts.create_model in Brain_Creation_Code directory
 
