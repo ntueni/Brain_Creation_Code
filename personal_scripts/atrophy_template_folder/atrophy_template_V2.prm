@@ -25,6 +25,14 @@ subsection experiment
           set empirical coefficient = -2.
           set mu = 10.e-6
     end 
+
+    # Ventricles (~)
+    subsection constitutive@[type=modified_one_term_ogden,instance=1,material_id=4]
+          set alpha = -1.0
+          set poisson ratio = 0.45
+          set empirical coefficient = -2.
+          set mu = 10.e-6
+    end 
       
     subsection nonlinear_solver_control
       set absolute tolerance = 1e-9
