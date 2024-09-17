@@ -54,10 +54,10 @@ class PostProcessorFactory:
             post_processor = RemoveRegion(post_processor, label_for_unused)
 
         # Creates blank spaces in areas of the ventricles if specified
-        all_labels = config.MATERIAL_LABELS.get_homogenized_labels_map()
-        label_for_ventricles = all_labels.get("ventricles", all_labels.get("ventricle", -1))
-        if label_for_ventricles != -1:
-            post_processor = RemoveRegion(post_processor, label_for_ventricles)
+        #all_labels = config.MATERIAL_LABELS.get_homogenized_labels_map()
+        #label_for_ventricles = all_labels.get("ventricles", all_labels.get("ventricle", -1))
+        #if label_for_ventricles != -1:
+        #    post_processor = RemoveRegion(post_processor, label_for_ventricles)
 
         # Creates boundary elements on specified regions
         for count, e_num in enumerate(config.get('boundary_element_numbers')):
