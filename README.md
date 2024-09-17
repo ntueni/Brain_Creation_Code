@@ -7,7 +7,9 @@ To run a new brain creation code you need the following files: 1. The aparc segm
 You will also need to change the location of the input files 'path_in' in lines 17 and 57 in "create_model". All files will be created in the a folder with their name found in the '/IOput/out/atrophy_files' or '/IOput/out/tumor_files' folder.
 
 ## Modifications ##
+- Run python3 -i -m personal_scripts.create_model in Brain_Creation_Code directory
 - Fixed problem with homogenization function
 - Possible to get 1R - 2R - 4R - 9R and 17R models with updated material parameters
-- run python3 -i -m personal_scripts.create_model in Brain_Creation_Code directory
+- Filled ventricles with fluid - CSF properties added to ventricles
+- 
 
