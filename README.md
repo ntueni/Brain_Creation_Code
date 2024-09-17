@@ -1,22 +1,15 @@
-# BrainMesher
+# Brain Creation Code
 
-Create a 3D brain mesh from mri images using only hexahedral elements.
+This project was started by Emma Griffiths ca. 2023 and continued by Nicole Tueni (see branches).
 
-1. Import aseg.mgz from freesurfer output (after performing ,recon-all' on mri images)
-2. Convert voxel image to point cloud
-3. Optional Add cerebrospinal fluid
-4. Convert point cloud to mesh of cube elements
-5. Optional: Use laplacian smothing on the surface and/or boundaries
+The code to create a model is found in the file 'create_model' in the 'personal_scripts' folder. 
+Uncomment sections '####### ATROPHY CODE #######' and '####### TUMOR LESION CODE #######' as necessary.
+This code will both create a mesh from the MRI images and create the prm files according to the heterogeneity level specified.
+In creating the prm files the volume average of the mesh is used to create homogenized material properties.
 
-Run **'Brain_creation.py'** to create example brain model to be viewed using Paraview  
-Edit **'model_config.ini'** as needed.
-
-Code tested using Python 3.6  
-Required packages:
-- numpy~=1.25.2
-- vtk~=9.2.6
-- nibabel~=5.1.0
-- scipy~=1.11.2
-- pyvista~=0.42.1
-- python-dotenv~=1.0.0
-
+To run a new brain creation code you need the following files:
+	1. The aparc segmented file from FreeSurfer. Please change the file name to 'aparc_DKTatlas+aseg.mgz'
+	2. The brain stem segmented file from Freesurfer. Please change the file name to 'brainstemSsLabels.mgz'
+	
+You will also need to change the location of the input files 'path_in' in lines 17 and 57 in "create_model".
+All files will be created in the a folder with their name found in the '/IOput/out/atrophy_files' or '/IOput/out/tumor_files' folder.
