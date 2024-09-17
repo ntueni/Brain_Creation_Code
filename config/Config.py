@@ -42,34 +42,39 @@ class ConfigFile:
             self.converter_type = Heterogeneity.NINER
 
         self.MATERIAL_LABELS = Material_Label()
-        try:
-            if self.converter_type == Heterogeneity.NINETEENR:
-                materials_config = configparser.ConfigParser()
-                materials_config.read(MATERIALS_17R_PATH)
-            else:
-                materials_config = configparser.ConfigParser()
-                materials_config.read(MATERIALS_9R_PATH)
-            materials = materials_config['DEFAULT']
-            for key in materials:
-                label = key
-                values = [int(x.strip()) for x in materials[key].split(",")]
-                self.MATERIAL_LABELS.addLabelToMap(label, values)
-        except KeyError:
-            print("Default materials labels will be used")
-            # Material labels (PRESET)
-            self.MATERIAL_LABELS.addLabelToMap('brainStem', 16)
-            self.MATERIAL_LABELS.addLabelToMap('greymatter', [3, 42])  # Left, Right
-            self.MATERIAL_LABELS.addLabelToMap('whitematter', [2, 41, 77])  # Left, Right, WM-hypointensities
-            self.MATERIAL_LABELS.addLabelToMap('corpuscallosum', [251, 252, 253, 254,
-                                                                  255])  # CC_Posterior, CC_Mid_Posterior, CC_Central, CC_Mid_Anterior, CC_Anterior
-            self.MATERIAL_LABELS.addLabelToMap('basalganglia', [11, 50, 12, 51, 13, 52, 26, 58, 62,
-                                                                30])  # Caudate(L&R), Putamen(L&R), Palladium(L&R), Accumbens Area(L&R), vessel(L&R)
-            self.MATERIAL_LABELS.addLabelToMap('cerebellum', [7, 46, 8, 47])  # WM(L&R), GM(L&R)
-            self.MATERIAL_LABELS.addLabelToMap('thalamus', [10, 49, 28, 60])  # Thalamus(L&R), Ventral DC(L&R)
-            self.MATERIAL_LABELS.addLabelToMap('hippocampus', [17, 53])  # Left, Right
-            self.MATERIAL_LABELS.addLabelToMap('amygdala', [18, 54])  # Left, Right
-            self.MATERIAL_LABELS.addLabelToMap('ventricles',
-                                               [4, 5, 43, 44, 14, 15])  # Lateral(L&R), 3rd, 4th, Inf-Lat-Vent(L&R)
+        # try:
+        #     if self.converter_type == Heterogeneity.NINETEENR:
+        #         materials_config = configparser.ConfigParser()
+        #         materials_config.read(MATERIALS_17R_PATH)
+        #     else:
+        #         materials_config = configparser.ConfigParser()
+        #         materials_config.read(MATERIALS_9R_PATH)
+        #     materials = materials_config['DEFAULT']
+        #     for key in materials:
+        #         label = key
+        #         values = [int(x.strip()) for x in materials[key].split(",")]
+        #         self.MATERIAL_LABELS.addLabelToMap(label, values)
+        # except KeyError:
+        #     print("Default materials labels will be used")
+        #     # Material labels (PRESET)
+        self.MATERIAL_LABELS.addLabelToMap('medullaOblongata', 175)
+        self.MATERIAL_LABELS.addLabelToMap('pons', [174,178])
+        self.MATERIAL_LABELS.addLabelToMap('Midbrain', [173])
+        self.MATERIAL_LABELS.addLabelToMap('WhiteMatter', [2, 41, 77, 78, 79, 1026, 1002, 1023, 1010, 2026, 2002, 2023, 2010])
+        self.MATERIAL_LABELS.addLabelToMap('CorpusCallosum', [251, 252, 253, 254,255])
+        self.MATERIAL_LABELS.addLabelToMap('NucleusCaudatus', [11,50])
+        self.MATERIAL_LABELS.addLabelToMap('Putamen', [12, 51, 26, 58])
+        self.MATERIAL_LABELS.addLabelToMap('Pallidum', [13, 52])
+        self.MATERIAL_LABELS.addLabelToMap('Cerebellum', [7, 46, 8, 47])
+        self.MATERIAL_LABELS.addLabelToMap('Thalamus', [10, 49, 28, 60])
+        self.MATERIAL_LABELS.addLabelToMap('Hippocampus', [17, 53])
+        self.MATERIAL_LABELS.addLabelToMap('Amygdala', [18, 54])
+        self.MATERIAL_LABELS.addLabelToMap('FrontalLobe', [1028,1027,1003,1018,1020,1019,1012,1014,1017,2028,2027,2003,2018,2020,2019,2012,2014,2017])
+        self.MATERIAL_LABELS.addLabelToMap('ParietalLobe', [1024, 1029, 1008, 1031, 1022, 1025, 2024, 2029, 2008, 2031, 2022, 2025])
+        self.MATERIAL_LABELS.addLabelToMap('TemporalLobe', [1030, 1015, 1009, 1007, 1034, 1006, 1016, 2030, 2015, 2009, 2007, 2034, 2006, 2016])
+        self.MATERIAL_LABELS.addLabelToMap('OccipitalLobe', [1011, 1013, 1005, 1021, 2011, 2013, 2005, 2021])
+        self.MATERIAL_LABELS.addLabelToMap('CortexInsula', [1035, 2035])
+        self.MATERIAL_LABELS.addLabelToMap('Ventricles', [4, 5, 43, 44, 14, 15])
 
         # File settings
         # Read Settings
