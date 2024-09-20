@@ -2,7 +2,7 @@ import numpy as np
 from point_cloud import PointCloud
 from scipy.spatial import Delaunay
 from scipy import ndimage
-
+import skimage.morphology 
 
 def in_hull(p, hull):
     """
@@ -119,7 +119,8 @@ class CSFFunctions:
         #     for [x,y,z] in np.column_stack((xs,ys,zs)):
         #         newData[x,y,z] = 3
 
-        inflated_csf = ndimage.binary_dilation(data).astype(int)
+        #inflated_csf = ndimage.binary_dilation(data).astype(int)
+        inflated_csf = skimage.morphology.convex_hull_image(data)
         for i in range(layers - 1):
             inflated_csf = ndimage.binary_dilation(inflated_csf).astype(int)
 
