@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from mesh.Mesh import Mesh
 from mesh.Node import Node
 from mesh.Element import HexElement, QuadElement
-from readers.vtkReader import readVtk
 from vtk import vtkIdList
 
 
