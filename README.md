@@ -11,5 +11,6 @@ You will also need to change the location of the input files 'path_in' in lines 
 - Fixed problem with homogenization function
 - Possible to get 1R - 2R - 4R - 9R and 17R models with updated material parameters
 - Filled ventricles with fluid - CSF properties added to ventricles
-- smoothed out CSF
+- Smoothed out CSF
+- Added BC option: Local boundary - allows to apply BC on one or more material labels
 
