@@ -203,3 +203,37 @@ class OpenBottomCSF(IBoundaryTest):
             valid_element = ((mats.count(csf_label) + mats.count(grey_matter_label) + mats.count(white_matter_label)) == len(mats))
             return valid_element
         return False
+
+class LocalBoundary(IBoundaryTest):
+    """
+    Boundary test to add boundary elements that are attached to specified region 
+    Specify region number in def validElement, m
+    Only takes elements that are not connected to other regions
+    """
+
+    def __init__(self, mesh):
+        e_centroids = np.zeros((max(mesh.elements.keys()) + 1, 4))
+        count = 0
+        for e_num, element in mesh.elements.items():
+            element_centroid = element.calculate_element_centroid()
+            e_centroids[e_num] = list(element_centroid) + [element.getMaterial()[0]]
+            count += 1
+        self.e_centroids = np.stack(e_centroids, axis=0)
+
+    def validElement(self, element_num):
+        [xc, yc, zc, m] = self.e_centroids[element_num]
+        centroid_values = [xc, yc, zc]
+        if m == 175 or m == 174:
+            elements_inline = self.e_centroids
+            for dim in range(3):
+                elements_inline = elements_inline[np.where(elements_inline[:, dim] == centroid_values[dim])[0], :]
+                elements_inline = elements_inline[elements_inline[:, dim].argsort()]
+                current_element_idx, = np.where(elements_inline[:, dim] >= centroid_values[dim])
+                if len(current_element_idx) != 0:
+                    current_element_idx = current_element_idx[0]
+                    elements_inline_A = elements_inline[:current_element_idx]
+                    if len(elements_inline_A) == 0:
+                        return True
+                    elements_inline_B = elements_inline[current_element_idx+1:]
+                    if len(elements_inline_B) == 0:
+                        return True
