@@ -7,6 +7,10 @@ from vtk import vtkIdList, vtkUnstructuredGridReader
 from os.path import exists
 from mesh.mesh_transformations import translate_mesh
 
+
+### This scripts transforms the data to show the deformation in the current configuration. 
+### Takes files from extract_last_step or manually extracted files
+
 def readVtk(path, filename):
     fullFilename1 = path + "/" + filename + ".vtk"
     if (exists(fullFilename1)):
@@ -96,8 +100,8 @@ def create_deformation_plot(f, path):
     writer.closeWriter()
 
 if __name__ == "__main__":    
-    path = "./Example_files/"
-    filenames = ["OAS1_0002_MR1_atrophy_1R_slice", "OAS1_0002_MR1_atrophy_9R_slice"]
+    path = "path_to_post_processing_files"
+    filenames = ["OAS1_0002_MR1_atrophy_1R_last_timestep", "OAS1_0002_MR1_atrophy_2R_last_timestep", "OAS1_0002_MR1_atrophy_4R_last_timestep", "OAS1_0002_MR1_atrophy_9R_last_timestep", "OAS1_0002_MR1_atrophy_19R_last_timestep"]
 
     for f in filenames:
         create_deformation_plot(f, path)
