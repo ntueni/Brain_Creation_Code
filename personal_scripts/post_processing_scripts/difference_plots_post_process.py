@@ -85,7 +85,7 @@ def create_difference_plot(filename1, path_to_file_1, filename2, path_to_file_2,
                     for i in range(data2.GetNumberOfPoints()):
                         arr_1_val = arr_1.GetValue(i)
                         arr_2_val = arr_2.GetValue(i)
-                        difference_in_vals = arr_1_val - arr_2_val
+                        difference_in_vals = np.abs(arr_1_val - arr_2_val)
                         difference[i] = difference_in_vals
                         arr_1_new[i] = arr_1_val
                         arr_2_new[i] = arr_2_val
@@ -137,9 +137,9 @@ def create_difference_plot(filename1, path_to_file_1, filename2, path_to_file_2,
         print(fullFilename2)
 
 if __name__ == "__main__":
-    path = "./Example_files/"
-    file1 = "OAS1_0002_MR1_atrophy_1R"
-    file2 = "OAS1_0002_MR1_atrophy_9R"
+    path = "path_to_files"
+    file1 = "OAS1_0002_MR1_atrophy_19R_last_timestep"
+    file2 = "OAS1_0002_MR1_atrophy_9R_last_timestep"
     out_path = path
     create_difference_plot(file1, path, file2, path, out_path)
 
