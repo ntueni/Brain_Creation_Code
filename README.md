@@ -13,4 +13,5 @@ You will also need to change the location of the input files 'path_in' in lines 
 - Filled ventricles with fluid - CSF properties added to ventricles
 - Smoothed out CSF
 - Added BC option: Local boundary - allows to apply BC on one or more material labels
+- Un-coarsen mesh: Preprocessor.py - super().coarsen()
 
