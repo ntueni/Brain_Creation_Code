@@ -15,6 +15,7 @@ subsection experiment
 
     subsection geometry@[type=import]
       set inpFile = %inp_file%
+	  set muFile = rampp_UCD_FA.inp
     end  
 
 	# AMYGDALA (Am)
@@ -114,9 +115,9 @@ subsection experiment
 end
 
 subsection global
-  set output directory = /calculate/efiSim1F/build_atrophy/out/%output%
+  set output directory = /workspace/src
 
-  set input directory  = /calculate/efiSim1F/build_atrophy/in
+  set input directory  = /workspace/src
   
   set output filename = %output%
   

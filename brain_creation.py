@@ -15,7 +15,8 @@ Output is a folder Models created in current working directory
 
 main - the main function of the script
 """
-
+import save_data
+import numpy as np
 from BrainHexMesh import BrainHexMesh
 from mesh.PostProcessorFactory import PostProcessorFactory
 from point_cloud.PointCloud import PointCloud
@@ -23,6 +24,7 @@ from config.Config import ConfigFile
 from voxel_data import Preprocessor
 from writers.aseg_manipulate import create_aseg
 from writers.Writers import Writer
+from ArrayProcessor import ArrayProcessor
 
 def run(config):
 
@@ -45,7 +47,42 @@ def run(config):
     create_aseg(config.get("file_in_path"), config.get("file_in"), config.get("file_out_path"), config.get("fileout"),
                 data_new)
 
-    # Creates point cloud from voxel data
+   # Creates point cloud from voxel data
+
+    """"
+    newData_4d einfügen und mit newData vereinen.
+    """
+    newData_4d = save_data.get_data()
+    if newData_4d is not None:
+        print(f"newData_4d successfully loaded with shape: {newData_4d.shape}")
+    else:
+        print("No data available in newData_4d. Ensure it was saved before running this.")
+
+    # Neues 4D-Array initialisieren
+    combined_array = np.zeros(data_new.shape[:3] + (2,))
+    
+    # Materialwerte in den ersten Kanal kopieren
+    combined_array[..., 0] = data_new[..., -1]  
+    
+    # FA-Werte nur für übereinstimmende Koordinaten in den zweiten Kanal übernehmen
+    for x in range(data_new.shape[0]):
+        for y in range(data_new.shape[1]):
+            for z in range(data_new.shape[2]):
+                if data_new[x, y, z] != 0:  # Materialwert ist nicht null
+                    combined_array[x, y, z, 0] = data_new[x, y, z]
+                    if newData_4d[x, y, z, 1] != 0:  # FA-Wert ist nicht null
+                        combined_array[x, y, z, 1] = newData_4d[x, y, z, 1]
+                    else:  # FA-Wert ist null
+                        combined_array[x, y, z, 1] = 0
+                else:  # Materialwert ist null
+                    combined_array[x, y, z, 1] = 0  # FA-Wert ebenfalls auf null setzen
+    
+    processor = ArrayProcessor()
+    processor.printArray(combined_array, "combined_array")
+    data_new = combined_array
+    
+    print(f"shape data_new: {data_new.shape}" )
+
     pointCloud = PointCloud()
     pointCloud.create_point_cloud_from_voxel(data_new)
 

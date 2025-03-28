@@ -234,43 +234,66 @@ class Mesh:
         voxel_size : int
             length of edge of the element
         """
-        [minX,minY,minZ] = pointData[:,:3].min(axis=0)
-        [maxX,maxY,maxZ] = pointData[:,:3].max(axis=0)
-        
-        elementX = maxX-minX+1
-        elementY = maxY+1
-        elementZ = maxZ+1
-        
-        elementNo = 0;
+        [minX, minY, minZ] = pointData[:, :3].min(axis=0)
+        [maxX, maxY, maxZ] = pointData[:, :3].max(axis=0)
+
+        elementX = maxX - minX + 1
+        elementY = maxY + 1
+        elementZ = maxZ + 1
+
+        elementNo = 0
         for p in pointData:
             elementNo += 1
-            [x,y,z,m] = p
-            startNode = (z+1) + (elementZ+1)*y + ((elementZ+1)*(elementY+1))*x
-            element_ica_numbers = [int(startNode+1), int(startNode), int(startNode+(elementZ+1)) ,int(startNode+(elementZ+1)+1)]
+            [x, y, z, m, fa] = p  # Extrahiere den FA-Wert
+            # print(f"Processing point: x={x}, y={y}, z={z}, FA={fa}") # debugging
+
+            # Berechne den Startknoten für das Element
+            startNode = (z + 1) + (elementZ + 1) * y + ((elementZ + 1) * (elementY + 1)) * x
+            element_ica_numbers = [
+                int(startNode + 1),
+                int(startNode),
+                int(startNode + (elementZ + 1)),
+                int(startNode + (elementZ + 1) + 1),
+            ]
+            
             element_ica_tmp = []
             element_ica_nodes = []
-            for i in element_ica_numbers:                  
-                if not self.nodes.get(i,False):
-                    coords = self.__calculate_node_coords(elementX,elementY,elementZ,i,voxel_size)
-                    node = Node(i,coords)
+
+            # Für jedes Knoten-Id aus element_ica_numbers
+            for i in element_ica_numbers:
+                if not self.nodes.get(i, False):
+                    coords = self.__calculate_node_coords(elementX, elementY, elementZ, i, voxel_size)
+                    node = Node(i, coords)  # Erstelle Node ohne den FA-Wert
+                    node.setCoords(coords)  # Setze die Koordinaten
+                    node.addData("FA", fa)  # Füge den FA-Wert hinzu
                     self.nodes[i] = node
                 else:
                     node = self.nodes[i]
                 element_ica_nodes.append(node)
-                
-                newNode = int(i + (elementZ+1)*(elementY+1)) 
-                if not self.nodes.get(newNode,False):
-                    coords = self.__calculate_node_coords(elementX,elementY,elementZ,newNode,voxel_size)
-                    node = Node(newNode,coords)
+
+                # Berechne und speichere den neuen Knoten
+                newNode = int(i + (elementZ + 1) * (elementY + 1))
+                if not self.nodes.get(newNode, False):
+                    coords = self.__calculate_node_coords(elementX, elementY, elementZ, newNode, voxel_size)
+                    node = Node(newNode, coords)  # Erstelle Node ohne den FA-Wert
+                    node.setCoords(coords)  # Setze die Koordinaten
+                    node.addData("FA", fa)  # Füge den FA-Wert hinzu
+                    
+                    # print(f"Node {i} created with FA={fa}") # debugging
                     self.nodes[newNode] = node
                 else:
                     node = self.nodes[newNode]
                 element_ica_tmp.append(node)
-                    
+
+            # Beide Knotenlisten zusammenfügen
             element_ica_nodes += element_ica_tmp
-            element = HexElement(elementNo, element_ica_nodes, mat=[m])
+            
+            # Erstelle das Hexaeder-Element, einschließlich Material (m) und FA-Wert
+            element = HexElement(elementNo, element_ica_nodes, mat=[m], fa=[fa])  # FA wird hier hinzugefügt
             self.elements[int(elementNo)] = element
-            self.elementToPointCloud[int(elementNo)] = [x,y,z,m]
+            self.elementToPointCloud[int(elementNo)] = [x, y, z, m, fa]  # FA-Wert im Mapping speichern
+
+        # Erstelle die Mappings für Knoten zu Elementen
         self.nodeToElements = mu.create_node_to_elem_map(mu.create_elements_ica_map(self.elements));
     
     
@@ -321,6 +344,8 @@ class Mesh:
         """
 
         print("Cleaning brain boundary")
+        
+        
 
         elementICA = mu.create_elements_ica_map(self.elements)
         self.nodeToElements = mu.create_node_to_elem_map(elementICA)
@@ -339,15 +364,25 @@ class Mesh:
                     if not self.elements[x].getMaterial().count(incorrect_label):
                         mats += mat
 
+                    #print("Connected elements:", connected_elements)
+                    #print("Materials from connected elements:", mats)
+                    #print("Materials before replacement:", materials)
+
                 if (len(mats)>0):
+
+                    
+
                     [modes, count] = np.unique(mats, return_counts=True)
                     modeIndices, = np.where(count == max(count))
                     modeIndex = modeIndices[0]
                     replacedValue = modes[modeIndex]
+
+                    #print("Replacing with mode:", replacedValue)
+
                     materials.remove(incorrect_label)
                     materials.insert(0,replacedValue)
-                else:
-                    print("materials not replaced")
+                #else:
+                    #print("materials not replaced")
         
         
     def __clean_mesh_nodes(self, elementsNotIncluded = [], replace=0):
@@ -397,7 +432,7 @@ class Mesh:
                                 self.replace_element(element2.num,replace=replace)
                             else:
                                 self.delete_element(element2.num) 
-        # print(str(len(cleaned_elements)) + " element deleted due to poor node connectivity")
+        print(str(len(cleaned_elements)) + " element deleted due to poor node connectivity")
         return len(cleaned_elements)
     
     def __clean_mesh_edges(self, elementsNotIncluded = [], replace=0):

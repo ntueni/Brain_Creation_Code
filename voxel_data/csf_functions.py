@@ -1,4 +1,5 @@
 import numpy as np
+import save_data
 from point_cloud import PointCloud
 from scipy.spatial import Delaunay
 from scipy import ndimage
@@ -45,6 +46,40 @@ class CSFFunctions:
 
         # Create point cloud
         point_cloud = PointCloud.PointCloud()
+
+        
+        #newData_4d einfügen und mit newData vereinen.
+        
+        # Rufe das Array newData_4d ab
+        newData_4d = save_data.get_data()
+        if newData_4d is not None:
+            print(f"newData_4d successfully loaded with shape: {newData_4d.shape}")
+        else:
+            print("No data available in newData_4d. Ensure it was saved before running this.")
+
+        combined_array = np.zeros(new_data.shape[:3] + (2,))
+        
+        # copy Material value to first channel
+        combined_array[..., 0] = new_data[..., -1]  # Material is lsdt dimension of new_data
+        
+        # Transfer FA values to the second channel only for matching coordinates
+        for x in range(new_data.shape[0]):
+            for y in range(new_data.shape[1]):
+                for z in range(new_data.shape[2]):
+                    if new_data[x, y, z] != 0:  
+                        combined_array[x, y, z, 0] = new_data[x, y, z]
+                        if newData_4d[x, y, z, 1] != 0:  
+                            combined_array[x, y, z, 1] = newData_4d[x, y, z, 1]
+                        else:  
+                            combined_array[x, y, z, 1] = 0
+                    else:  
+                        combined_array[x, y, z, 1] = 0  
+        
+
+        new_data = combined_array
+
+
+
         pc = point_cloud.create_point_cloud_from_voxel(new_data)
 
         xmin_tot, ymin_tot, zmin_tot = [int(p) for p in np.min(pc[:, :3], axis=0)]
@@ -67,7 +102,8 @@ class CSFFunctions:
                     for y in range(int(ymin), int(ymax + 1)):
                         if data[x, y, z] == 0 and (y < ymax_tot):
                             if in_hull([x, y], hull):
-                                point_cloud.add_point_to_cloud([x, y, z, 24])
+                                # add FA-Value (0)
+                                point_cloud.add_point_to_cloud([x, y, z, 24, 0])
                                 data[x, y, z] = 24
                                 new_data[x, y, z] = 24
             else:
@@ -107,7 +143,8 @@ class CSFFunctions:
                     for z in range(int(min2d), int(max2d + 1)):
                         if (data[x, y, z] == 0) and (y < ymax_tot):
                             if in_hull([x, z], hull):
-                                point_cloud.add_point_to_cloud([x, y, z, 24])
+                                # add FA-Value (0)
+                                point_cloud.add_point_to_cloud([x, y, z, 24, 0])
                                 data[x, y, z] = 24
                                 new_data[x, y, z] = 24
             else:

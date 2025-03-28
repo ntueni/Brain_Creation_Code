@@ -11,20 +11,36 @@ import pyvista as pv
 class PointCloud:
     
     def create_point_cloud_from_voxel(self, data):
-        current_data = data
+        """
+        Erstellt eine Punktwolke aus einem 4D-Voxel-Datenarray.
+        
+        Parameters:
+        data : numpy.ndarray
+            Ein 4D-Array, bei dem die letzten Dimensionen Materialtypen oder FA-Values enthalten.
+            
+        Returns:
+        numpy.ndarray
+            Die generierte Punktwolke im Format (x, y, z, data[..., 0], data[..., 1]).
+        """
+        print(f"data shape point_cloud: {data.shape}" )
+        current_data = data[..., 0]
+        additional_data = data[..., 1] if data.shape[-1] > 1 else np.zeros_like(current_data)
         current_dimensions = current_data.shape
-        pointCloudData = np.zeros((np.prod(current_dimensions),4));
-        count = 0;
+        pointCloudData = np.zeros((np.prod(current_dimensions), 5))  # Hinzufügen einer zusätzlichen Spalte
+        count = 0
+        
         for x in range(current_dimensions[0]):
-            if (np.sum(current_data[x,:,:]) > 0):
+            if np.sum(current_data[x, :, :]) > 0:
                 for y in range(current_dimensions[1]):
-                    if (np.sum(current_data[x,y,:]) > 0):
+                    if np.sum(current_data[x, y, :]) > 0:
                         for z in range(current_dimensions[2]):
-                            if (current_data[x,y,z] != 0):
-                                pointCloudData[count,:] = [x,y,z,current_data[x,y,z]] # co-ordinate data and material type (used in colouring point_cloud)
-                                count += 1;
-        self.pcd = pointCloudData[0:count,:]
-        self.set_colour_map(data)
+                            if current_data[x, y, z] != 0:
+                                pointCloudData[count, :] = [
+                                    x, y, z, current_data[x, y, z], additional_data[x, y, z]
+                                ]
+                                count += 1
+        self.pcd = pointCloudData[:count, :]
+
         return self.pcd
     
     def create_point_cloud_from_mesh(self, elements, nodes):
@@ -65,8 +81,25 @@ class PointCloud:
     #     point_cloud.plot(eye_dome_lighting=True)
     #     return 0
     
-    def add_point_to_cloud(self,p):
-        self.pcd = np.append(self.pcd,[p], axis=0)
+    def add_point_to_cloud(self, p):
+        """
+        Fügt einen Punkt zur Punktwolke hinzu.
+        
+        Parameters:
+        p : list oder numpy.ndarray
+            Punkt im Format [x, y, z, value1, value2].
+        """
+        # Prüfe, ob `self.pcd` existiert
+        if not hasattr(self, "pcd"):
+            raise AttributeError("Point cloud (self.pcd) has not been initialized.")
+        
+        # Prüfe die Dimension von `p`
+        expected_dim = self.pcd.shape[1]
+        if len(p) != expected_dim:
+            raise ValueError(f"Point dimension mismatch. Expected {expected_dim}, got {len(p)}.")
+
+        # Füge den Punkt hinzu
+        self.pcd = np.append(self.pcd, [p], axis=0)
     
     def view_slice(self, axis, location):
         if (location > 1) and (axis < self.pcd.shape[1]):

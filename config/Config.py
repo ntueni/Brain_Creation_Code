@@ -106,11 +106,11 @@ class ConfigFile:
         file_out_name = "unnamed_test" if file_out_name == '' else file_out_name
         self.config_dict['fileout'] = file_out_name
 
-        types_string = curr_config.get('fileout_types')
+        types_string = curr_config.get('fileout_types', curr_config.get('fileout_Types', 'vtk')) 
         types = [x.strip() for x in types_string.split(",")]
         for t in types:
-            assert ['ucd', 'vtk', 'abaqus'].count(t), "OUTPUT TYPE {} NOT SUPPORTED".format(t)
-        self.config_dict['fileout_types'] = types  # 'ucd' | 'vtk' | 'abaqus'
+            assert ['ucd', 'vtk', 'abaqus'].count(t), f"OUTPUT TYPE {t} NOT SUPPORTED"
+        self.config_dict['fileout_types'] = types # 'ucd' | 'vtk' | 'abaqus'
 
         # If corpus callosum is saved as an external file (must be stored as cc.mgz in mri folder)
         self.config_dict['external_cc'] = curr_config.getboolean('external_cc', False)
@@ -175,16 +175,15 @@ class ConfigFile:
         else:
             boundary_element_numbers = [int(x.strip()) for x in boundary_ele_numbers_tmp.split(",")]
 
-        excluded_regions_tmp = curr_config.get('excluded_regions')
-        excluded_regions_tmp = excluded_regions_tmp.strip().replace(" ", "")
-        if excluded_regions_tmp == '':
+        excluded_regions_tmp = curr_config.get('excluded_regions', '')  # Standardwert, falls nicht vorhanden
+        if excluded_regions_tmp is None or excluded_regions_tmp.strip() == '':
             excluded_regions = []
         else:
             excluded_regions_list = []
             excluded_list = []
             inside_pa = ''
             bracketOpen = False
-            for s in excluded_regions_tmp:
+            for s in excluded_regions_tmp.strip().replace(" ", ""):
                 if s == ']' and bracketOpen:
                     excluded_list.append(inside_pa)
                     inside_pa = ''
@@ -195,10 +194,10 @@ class ConfigFile:
                     inside_pa += s
             excluded_regions = excluded_list
 
-        boundary_tests_tmp = curr_config.get(
-            'boundary_tests')  # ['OpenBottomCSF', 'OnlyOnLabel-Ventricles', 'OnlyOnLabel-Lesion']
+        boundary_tests_tmp = curr_config.get('boundary_tests')  # Could be an empty string or None
         boundary_tests = []
-        if boundary_tests_tmp != '':
+        if boundary_tests_tmp:
+            # Proceed only if the value is not empty or None
             for x in boundary_tests_tmp.split(","):
                 x = x.strip()
                 if x == '':
@@ -207,10 +206,10 @@ class ConfigFile:
                     boundary_tests.append(x)
         elif len(boundary_element_numbers) != 0:
             boundary_tests.append('none')
-
-        assert (len(boundary_element_numbers) == len(excluded_regions) and
-                len(excluded_regions) == len(boundary_tests)), \
+        # Ensure consistency across related lists
+        assert len(boundary_element_numbers) == len(excluded_regions) and len(excluded_regions) == len(boundary_tests), \
             "Boundary mesh data incomplete. Please review config file"
+
 
         boundary_element_numbers.reverse()
         self.config_dict['boundary_element_numbers'] = boundary_element_numbers

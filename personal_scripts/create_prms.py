@@ -35,46 +35,37 @@ class MaterialDataBase:
 
 
 class OneTermModifiedOgden(MaterialDataBase):
-
     def __init__(self, number):
         super().__init__("modified_one_term_ogden", number)
         self.add_parameter("empirical coefficient", -2)
-
     def material_data_string(self):
         assert self.parameter_values_map.get("alpha", False)
         assert self.parameter_values_map.get("poisson ratio", False)
         assert self.parameter_values_map.get("empirical coefficient", False)
         assert self.parameter_values_map.get("mu", False)
         return super().material_data_string()
-
     def set_alpha(self, value):
         self.add_parameter("alpha", value)
-
     def set_poisson(self, value):
         self.add_parameter("poisson ratio", value)
-
     def set_mu(self, value):
         self.add_parameter("mu", value)
 
-
 class OneTermModifiedOgdenAtrophy(OneTermModifiedOgden):
-
     def __init__(self, number):
         MaterialDataBase.__init__(self, "modified_one_term_ogden_atrophy", number)
         self.add_parameter("empirical coefficient", -2)
-
     def material_data_string(self):
         assert self.parameter_values_map.get("alpha", False)
         assert self.parameter_values_map.get("poisson ratio", False)
         assert self.parameter_values_map.get("empirical coefficient", False)
-        assert self.parameter_values_map.get("mu", False)
         assert self.parameter_values_map.get("normal atrophy rate", False)
         assert self.parameter_values_map.get("enhanced atrophy rate", False)
-        return super().material_data_string()
+        
 
+        return super().material_data_string()
     def set_normal_atrophy(self, value):
         self.add_parameter("normal atrophy rate", value)
-
     def set_enhanced_atrophy(self, value):
         self.add_parameter("enhanced atrophy rate", value)
 

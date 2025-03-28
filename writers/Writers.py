@@ -491,7 +491,14 @@ class UCDWriter(BaseWriter,IWriter):
         for n in nodeKeys:
             nodeNum = count       
             self.node_num_map_old_to_new[n] = nodeNum
-            self.f.write(str(nodeNum) + "\t" + "\t".join([str(node) for node in nodeMap[n].getCoords()]) + "\n")
+            
+            # call coordinates and FA-Values
+            coords_str = "\t".join([str(coord) for coord in nodeMap[n].getCoords()])
+            fa_value = nodeMap[n].getData("FA")  # FA-Wert aus dem `data`-Dictionary abrufen
+
+            # write nodes to the UCD-Format
+            self.f.write(f"{nodeNum}\t{coords_str}\t{fa_value}\n")
+
             count += 1
         
     

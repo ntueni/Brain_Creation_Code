@@ -173,24 +173,33 @@ class Material_Label:
             DESCRIPTION.
 
         """
-        print("Homogenizing data according to chosen labels")
+        if len(data.shape) != 4:
+            raise ValueError("Input data must be a 4D array.")
+
+        print("Homogenizing 4D data according to chosen labels")
         current_dimensions = data.shape
-        newData = np.zeros(current_dimensions, int)
+        newData = np.zeros_like(data)
         unused_values = [replace]
+
+        # Iterate over each voxel in the 3D space (excluding channels)
         for x in range(current_dimensions[0]):
-            if (np.sum(data[x,:,:]) > 0):
-                for y in range(current_dimensions[1]):
-                    if (np.sum(data[x,y,:]) > 0):
-                        for z in range(current_dimensions[2]):
-                            data_value = data[x,y,z]
-                            if self.inverseLabelsMap.get(data_value,False):
-                                label_name = self.inverseLabelsMap[data_value]
-                                label_number = self.labelsMap[label_name][0]
-                                newData[x,y,z] = label_number
-                            elif data_value != 0:                                
-                                newData[x,y,z] = replace
-                                if not unused_values.count(data_value):
-                                    unused_values.append(data_value)
-        self.addLabelToMap("unused",unused_values)
+            for y in range(current_dimensions[1]):
+                for z in range(current_dimensions[2]):
+                    data_value = data[x, y, z, 0]  # Access the first channel
+                    
+                    if self.inverseLabelsMap.get(data_value):  # Check if the value exists in the label map
+                        label_name = self.inverseLabelsMap[data_value]
+                        label_number = self.labelsMap[label_name][0]
+                        newData[x, y, z, 0] = label_number
+                    elif data_value != 0:  # Value not in label map but non-zero
+                        newData[x, y, z, 0] = replace
+                        if data_value not in unused_values:
+                            unused_values.append(data_value)
+                                    
+        # Copy the second channel unchanged
+        newData[..., 1] = data[..., 1]
+
+        # Add unused values to the label map
+        self.addLabelToMap("unused", unused_values)
         return newData;
             

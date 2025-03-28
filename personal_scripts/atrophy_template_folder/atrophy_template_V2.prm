@@ -15,6 +15,7 @@ subsection experiment
 
     subsection geometry@[type=import]
       set inpFile = %inp_file%
+      set muFIle = rampp_UCD_FA.inp
     end  
 
 %materials%
@@ -50,9 +51,9 @@ subsection experiment
 end
 
 subsection global
-  set output directory = /data/iwtm69/efi_biological/Brainiacs_EFI/build_atrophy/out/%output%
+  set output directory = /workspace/src
 
-  set input directory  = /calculate/iwtm69/efi_biological/Brainiacs_EFI/build_atrophy/in
+  set input directory  = /workspace/src
   
   set output filename = %output%
   

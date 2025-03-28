@@ -6,11 +6,12 @@ Created on Fri May 12 11:02:36 2023
 """
 
 import numpy as np
+import save_data
 from scipy import stats
 from scipy import ndimage
 from voxel_data.GridBox import GridBox
 from scipy.spatial import Delaunay
-
+from ArrayProcessor import ArrayProcessor
 """
 A module of functions to assist with manipulating voxel data
 """
@@ -38,80 +39,112 @@ def check_data_dims(data):
         print('Error, data shape not 3 dimensional!')
         return False    
     
-def override_voxel_data(new_data,current_data, replacementValue = -1):
+def override_voxel_data(new_data, current_data, replacementValue=-1):
     current_dimensions = current_data.shape
     for x in range(current_dimensions[0]):
-        if (np.sum(new_data[x,:,:]) > 0):
+        if np.sum(new_data[x, :, :, 0]) > 0:  # Zugriff auf den ersten Kanal
             for y in range(current_dimensions[1]):
-                if (np.sum(new_data[x,y,:]) > 0):
+                if np.sum(new_data[x, y, :, 0]) > 0:  # Zugriff auf den ersten Kanal
                     for z in range(current_dimensions[2]):
-                        if (new_data[x,y,z] != 0):
+                        if new_data[x, y, z, 0] != 0:  # Zugriff auf den ersten Kanal
                             if replacementValue == -1:
-                                current_data[x, y, z] = new_data[x, y, z]
+                                current_data[x, y, z, 0] = new_data[x, y, z, 0]  # Zugriff auf den ersten Kanal
                             else:
-                                current_data[x,y,z] = replacementValue
+                                current_data[x, y, z, 0] = replacementValue
     
 def coarsen(new_voxel_size, original_data):
-    print("Coarsening mesh by a factor of " + str(new_voxel_size))
+    print(f"Coarsening mesh by a factor of {new_voxel_size}")
+
+    processor = ArrayProcessor()
+    processor.printArray(original_data, "original_data")
+    
     current_dimensions = original_data.shape
-    new_dimensions = [int(p) for p in np.floor(np.array(current_dimensions)/new_voxel_size)];
-    newData = np.zeros(new_dimensions, int)
-    for x in np.arange(0,(current_dimensions[0]-1),new_voxel_size):
-        top_x = x+new_voxel_size
-        if (np.sum(original_data[x:top_x,:,:]) > 0):
-            for y in np.arange(0,(current_dimensions[1]-1),new_voxel_size):
-                top_y = y+ new_voxel_size
-                if (np.sum(original_data[x:top_x,y:top_y,:]) > 0):
-                    for z in np.arange(0,(current_dimensions[2]-1),new_voxel_size):
-                        top_z = z+new_voxel_size
-                        gridBox = original_data[x:top_x, y:top_y, z:top_z].reshape(-1)
-                        if (np.sum(gridBox) > 0):
-                            unique, counts = np.unique(gridBox, return_counts=True)
-                            num_values = dict(zip(unique, counts))
-                            if num_values.get(251, False):
-                                replacedValue = 251
-                            elif num_values.get(4, False):
-                                replacedValue = 4
+    new_dimensions = [int(p) for p in np.floor(np.array(current_dimensions[:3]) / new_voxel_size)] + [2]
+    newData1 = np.zeros(new_dimensions, dtype=original_data.dtype)
+    
+    for x in np.arange(0, current_dimensions[0], new_voxel_size):
+        top_x = min(x + new_voxel_size, current_dimensions[0])
+        for y in np.arange(0, current_dimensions[1], new_voxel_size):
+            top_y = min(y + new_voxel_size, current_dimensions[1])
+            for z in np.arange(0, current_dimensions[2], new_voxel_size):
+                top_z = min(z + new_voxel_size, current_dimensions[2])
+                # Zugriff auf beide Kanäle
+                gridBox_1 = original_data[x:top_x, y:top_y, z:top_z, 0].reshape(-1)
+                gridBox_2 = original_data[x:top_x, y:top_y, z:top_z, 1].reshape(-1)
+                
+                if np.sum(gridBox_1) > 0:  # Nur berücksichtigen, wenn der erste Kanal relevante Werte hat
+                    unique_1, counts_1 = np.unique(gridBox_1, return_counts=True)
+                    num_values_1 = dict(zip(unique_1, counts_1))
+                    
+                    # Berechnung von replacedValue_1
+                    if num_values_1.get(251, False):
+                        replacedValue_1 = 251
+                    elif num_values_1.get(4, False):
+                        replacedValue_1 = 4
+                    else:
+                        modes_1, count_1 = stats.find_repeats(gridBox_1)
+                        modeIndices_1, = np.where(count_1 == max(count_1))
+                        
+                        # Zusätzliche Logik für Mehrdeutigkeiten
+                        if len(modeIndices_1) > 1:
+                            if 0 in modeIndices_1:
+                                # Wenn Index 0 beteiligt ist
+                                if modeIndices_1[0] == 0:
+                                    replacedValue_1 = modes_1[modeIndices_1[1]]
+                                else:
+                                    replacedValue_1 = modes_1[modeIndices_1[0]]
                             else:
-                                [modes, count] = stats.find_repeats(gridBox)
-                                modeIndices, = np.where(count == max(count))
-                                modeIndex = modeIndices[0]
-                                replacedValue = modes[modeIndex]
-                                if (len(modes)>1) and (len(modeIndices)>1):
-                                    if (modeIndices[0]==0) or (modeIndices[1]==0):
-                                        if (modeIndices[0]==0):
-                                            replacedValue = modes[modeIndices[1]]
-                                        elif (modeIndices[1]==0):
-                                            replacedValue = modes[modeIndices[0]]
-                                    else:
-                                        xbot = x-1 if x>0 else 0
-                                        ybot = y-1 if y>0 else 0
-                                        zbot = z-1 if z>0 else 0
-                                        gridBox = original_data[xbot:top_x, ybot:top_y, zbot:top_z].reshape(-1)
-                                        [modes,count] = stats.find_repeats(gridBox)
-                                        modeIndices, = np.where(count == max(count))
-                                        modeIndex = modeIndices[0]
-                                        replacedValue = modes[modeIndex]
-                                
-                                
-                            newData[int(x/new_voxel_size),int(y/new_voxel_size),int(z/new_voxel_size)] = replacedValue
-    return newData        
+                                replacedValue_1 = modes_1[modeIndices_1[0]]
+                        else:
+                            replacedValue_1 = modes_1[modeIndices_1[0]]
+
+                    # Finden der Koordinaten des dominanten Wertes in gridBox_1
+                    dominant_index = np.argmax(gridBox_1 == replacedValue_1)
+                    replacedValue_2 = gridBox_2[dominant_index]
+                else:
+                    # Fallback: Benachbarte Werte berücksichtigen
+                    xbot = max(x - 1, 0)
+                    ybot = max(y - 1, 0)
+                    zbot = max(z - 1, 0)
+                    fallback_gridBox = original_data[xbot:top_x, ybot:top_y, zbot:top_z, 0].reshape(-1)
+                    if len(fallback_gridBox) > 0:
+                        modes, count = stats.find_repeats(fallback_gridBox)
+                        modeIndices, = np.where(count == max(count))
+                        replacedValue_1 = modes[modeIndices[0]]
+                        replacedValue_2 = 0  # Fallback für den zweiten Kanal
+                    else:
+                        replacedValue_1 = 0
+                        replacedValue_2 = 0
+
+                # Speichern der Werte im neuen Datenarray
+                newData1[int(x / new_voxel_size), int(y / new_voxel_size), int(z / new_voxel_size), 0] = replacedValue_1
+                newData1[int(x / new_voxel_size), int(y / new_voxel_size), int(z / new_voxel_size), 1] = replacedValue_2
+    
+
+    #Speichern von newData1 als newData_4d
+    newData_4d = newData1.copy()
+    save_data.save_data(newData_4d)  # Speichert die Daten im Untermodul
+
+    processor.printArray(newData_4d, "newData_4d")
+    # Rückgabe nur des Kanals [..., 0]
+    newData = newData1[..., 0]
+
+    return newData
 
 def create_binary_image(current_data, search=-1):
     current_dimensions = current_data.shape
     newData = np.zeros(current_dimensions, int)
     for x in range(current_dimensions[0]):
-        if (np.sum(current_data[x,:,:]) > 0):
+        if (np.sum(current_data[x, :, :]) > 0):
             for y in range(current_dimensions[1]):
-                if (np.sum(current_data[x,y,:]) > 0):
+                if (np.sum(current_data[x, y, :]) > 0):
                     for z in range(current_dimensions[2]):
-                        if (search== -1) and (current_data[x,y,z] != 0):
-                            newData[x,y,z] = 1
-                        elif (search != -1) and (current_data[x,y,z] == search):
-                            newData[x,y,z] = 1
+                        if (search == -1) and (current_data[x, y, z] != 0):
+                            newData[x, y, z] = 1
+                        elif (search != -1) and (current_data[x, y, z] == search):
+                            newData[x, y, z] = 1
                             
     return newData
-
 
 def clean_voxel_data(start_data):  
     print("Performing cleaning operations on data")

@@ -66,10 +66,26 @@ class BrainHexMesh:
         self.configured = True
 
     @staticmethod
-    def __get_data__(path, file):
+    def __get_data__(path, file, save_list_path=None):
         importer = inp.ImportFromFile(path, file)
-        return importer.getData()
-    
+        data = importer.getData()
+
+        if isinstance(data, tuple):
+            data_array, metadata_list = data  # Extract first element (numpy array) and list
+
+            if save_list_path and isinstance(metadata_list, list):
+                try:
+                    with open(save_list_path, "w") as f:
+                        for item in metadata_list:
+                            f.write(f"{item}\n")
+                    print(f"Liste erfolgreich unter '{save_list_path}' gespeichert.")
+                except Exception as e:
+                    print(f"Fehler beim Speichern der Liste: {e}")
+
+            return data_array 
+
+        return data
+
     def import_data(self, path="", file=""):
 
         assert self.configured, "config file has not been set for this. Please run config(cf -> ConfigFile) before importing data"
@@ -77,20 +93,23 @@ class BrainHexMesh:
         if (path == "") and (file == ""):
             path = self.config.get('file_in_path')
             file = self.config.get('file_in')
-        data = BrainHexMesh.__get_data__(path, file)
+        
+         # Call __get_data__, including saving the list (if required)
+        data = BrainHexMesh.__get_data__(path, file, save_list_path="./metadata_list.txt")
 
         if self.config.get('external_cc'):
-            cc_data = BrainHexMesh.__get_data__(path, "cc.mgz")
+            cc_data = BrainHexMesh.__get_data__(path, "cc.mgz", save_list_path="./cc_metadata_list.txt")
             cc_data = bm.create_binary_image(cc_data)
             self.add_region(cc_data, data, 251)
 
         if self.config.get('segmented_brainstem'):
-            bs_data = BrainHexMesh.__get_data__(path, "brainstemSsLabels.mgz")
+            bs_data = BrainHexMesh.__get_data__(path, "brainstemSsLabels.mgz", save_list_path="./bs_metadata_list.txt")
             self.add_region(bs_data, data, -1)
 
         values_in_data = list(np.unique(data))
         if not values_in_data.count(251):
             warnings.warn("There is no corpus callosum in this data set")
+        
         return data
     
     def homogenize_data(self, data, unusedLabel="Unused"):
@@ -182,6 +201,8 @@ class BrainHexMesh:
 
     @staticmethod
     def add_region(cc_data, current_data, region_value):
+        #print(f"shape cc_data: {cc_data.shape}")
+        #print(f"shape current_data: {current_data.shape}")
         """
         ADd region to voxel data by overwriting current data
 

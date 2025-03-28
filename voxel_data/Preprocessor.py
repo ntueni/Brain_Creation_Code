@@ -28,6 +28,7 @@ class IPreprocessor(ABC):
     def coarsen(self, VOXEL_SIZE=2):
         print("########## Coarsening data ##########")
         self.data = bm.coarsen(VOXEL_SIZE, self.data)
+        
 
     def clean_data(self):
         bm.clean_region(self.data, self.ventricle_label)
@@ -41,6 +42,7 @@ class IPreprocessor(ABC):
             # Find and fill erroneous voids within model
             print("########## Removing voids from data ##########")
             print("### Iteration number " + str(iteration_count))
+            print(f"Shape data coarsen: {self.data.shape}") #debugging
             maze = Maze.Maze(self.data)
             solver = Maze_Solver.Maze_Solver(maze)
             voids_to_fill = solver.find_voids()
